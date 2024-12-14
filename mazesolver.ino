@@ -38,18 +38,30 @@ int ffmax = 11; //the maximum distance from front sensor a front wall can be if 
 int queue[625][2]; //make a queue of size |board| ^2 ... two pointer array
 int left_pointer = 0; //pop from the queue
 int right_pointer = 0; //push onto the queue
-int board[][5] = { {4, 3, 2, 3, 4},   //places 0  1  2  3  4
-                   {3, 2, 1, 2, 3},   //places 5  6  7  8  9
-                   {2, 1, 0, 1, 2},   //places 10 11 12 13 14
-                   {3, 2, 1, 2, 3},   //places 15 16 17 18 19
-                   {4, 3, 2, 3, 4} }; //places 20 21 22 23 24
+
+struct cell {
+  int dist;
+  bool nWall;
+  bool eWall;
+  bool sWall;
+  bool wWall;
+  bool visited;
+};
+
+cell board[5][5];
+
+// int board[][5] = { {4, 3, 2, 3, 4},   //places 0  1  2  3  4
+//                    {3, 2, 1, 2, 3},   //places 5  6  7  8  9
+//                    {2, 1, 0, 1, 2},   //places 10 11 12 13 14
+//                    {3, 2, 1, 2, 3},   //places 15 16 17 18 19
+//                    {4, 3, 2, 3, 4} }; //places 20 21 22 23 24
                 
-bool walls[5][5][4];
-bool visited[5][5] = {{false, false, false, false, false},
-                      {false, false, false, false, false},
-                      {false, false, false, false, false},
-                      {false, false, false, false, false},
-                      {false, false, false, false, false}};
+// bool walls[5][5][4];
+// bool visited[5][5] = {{false, false, false, false, false},
+//                       {false, false, false, false, false},
+//                       {false, false, false, false, false},
+//                       {false, false, false, false, false},
+//                       {false, false, false, false, false}};
 
 // char names[][5] = { {'U', 'V', 'W', 'X', 'Y'},   //places 0  1  2  3  4
 //                    {'P', 'Q', 'R', 'S', 'T'},   //places 5  6  7  8  9
@@ -71,6 +83,33 @@ void setup() {
   fr->setSpeed(50);
   bl->setSpeed(50);
   br->setSpeed(50);
+
+
+  for (int i = 0; i < 5; i++) {
+    for (int j = 0; j < 5; j++) {
+      board[i][j].nWall = false;
+      board[i][j].eWall = false;
+      board[i][j].sWall = false;
+      board[i][j].wWall = false;
+      board[i][j].visited = false;
+      if(i == 2 && j == 2) {
+        // middle
+        board[i][j].dist = 0;
+      } else if ((i == 1 && j == 2) || (i == 2 && j == 1) || (i == 3 && j == 2) || (i == 2 && j == 3)) {
+
+        board[i][j].dist = 1;
+      } else if ((i == 0 && j == 0) || (i == 0 && j == 0) || (i == 4 && j == 0) || (i == 4 && j == 4)) {
+        // corners
+        board[i][j].dist = 4;
+      } else if ((i == 0 && j == 1) || (i == 0 && j == 3) || (i == 1 && j == 0) || (i == 0 && j == 4) || (i == 3 && j == 0) || (i == 3 && j == 4) || (i == 4 && j == 1) || (i == 4 && j == 3)) {
+        board[i][j].dist = 3;
+      } else {
+        board[i][j].dist = 2;
+      }
+
+    }
+  }
+
 
   pinMode(ltr, OUTPUT); // Sets the triggerPin as an Output
   pinMode(le, INPUT); // Sets the echoPin as an Input
@@ -221,11 +260,17 @@ void checkWalls() {
     }
   }
 
-  visited[positionX][positionY] = true;
-  walls[positionX][positionY][0] = isWalls[0];
-  walls[positionX][positionY][1] = isWalls[1];
-  walls[positionX][positionY][2] = isWalls[2];
-  walls[positionX][positionY][3] = isWalls[3];
+  // visited[positionX][positionY] = true;
+  // walls[positionX][positionY][0] = isWalls[0];
+  // walls[positionX][positionY][1] = isWalls[1];
+  // walls[positionX][positionY][2] = isWalls[2];
+  // walls[positionX][positionY][3] = isWalls[3];
+
+  board[positionX][positionY].visited = true;
+  board[positionX][positionY].nWall = isWalls[0];
+  board[positionX][positionY].eWall = isWalls[1];
+  board[positionX][positionY].sWall = isWalls[2];
+  board[positionX][positionY].wWall = isWalls[3];
 
 }
 
@@ -237,29 +282,29 @@ int findMinNeighbor() {
       if (isWalls[i] == false) { //it is possible to go in direction i
 
         if (i == 0 ) { //if the direction is forward
-          if (board[positionX+1][positionY] < minimum_neighbor) { //if the board in front is less than the minimum
-            minimum_neighbor = board[positionX+1][positionY]; //the new minimum is the board in front
+          if (board[positionX+1][positionY].dist < minimum_neighbor) { //if the board in front is less than the minimum
+            minimum_neighbor = board[positionX+1][positionY].dist; //the new minimum is the board in front
             direction = 0; //plan to move forward
           }
         }
 
         if (i == 1 ) { //if the direction is right
-          if (board[positionX][positionY+1] < minimum_neighbor) { //if the board to the right is less than the minimum
-            minimum_neighbor = board[positionX][positionY+1]; //the new minimum is the board on the right
+          if (board[positionX][positionY+1].dist < minimum_neighbor) { //if the board to the right is less than the minimum
+            minimum_neighbor = board[positionX][positionY+1].dist; //the new minimum is the board on the right
             direction = 1; //plan to move right
           }
         }
 
         if (i == 2 ) { //if the direction is backwards
-          if (board[positionX-1][positionY] < minimum_neighbor) { //if the board in the back is less than the minimum
-            minimum_neighbor = board[positionX-1][positionY]; //the new minimum is the board in the back
+          if (board[positionX-1][positionY].dist < minimum_neighbor) { //if the board in the back is less than the minimum
+            minimum_neighbor = board[positionX-1][positionY].dist; //the new minimum is the board in the back
             direction = 2; //plan to move backward
           }
         }
 
         if (i == 3 ) { //if the direction is left
-          if (board[positionX][positionY-1] < minimum_neighbor) { //if the board to the left is less than the minimum
-            minimum_neighbor = board[positionX][positionY-1]; //the new minimum is the board on the left
+          if (board[positionX][positionY-1].dist < minimum_neighbor) { //if the board to the left is less than the minimum
+            minimum_neighbor = board[positionX][positionY-1].dist; //the new minimum is the board on the left
             direction = 3; //plan to move left
           }
         }
@@ -268,7 +313,7 @@ int findMinNeighbor() {
   }
 
   //floodfill queue
-  if (minimum_neighbor > board[positionX][positionY]) { //if none of the surrounding cells are smaller
+  if (minimum_neighbor > board[positionX][positionY].dist) { //if none of the surrounding cells are smaller
     floodFillX = positionX;
     floodFillY = positionY;
     push(); //push the current position

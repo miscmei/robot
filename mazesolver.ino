@@ -38,7 +38,7 @@ int ffmax = 11; //the maximum distance from front sensor a front wall can be if 
 int queue[450]; //make a queue of size |board| ^2 ... two pointer array
 int left_pointer = 0; //pop from the queue
 int right_pointer = 0; //push onto the queue
-int current_min_neightbor; 
+int current_min_neightbor; //value of the minimum 
 
 struct cell {
     int dist;
@@ -59,8 +59,6 @@ cell board[5][5];
 int positionX = 0; //current X position..stop when 2,2
 int positionY = 0; //current Y position...stop when 2,2
 int orientation = 0; //direction the robot is facing...0 = forward, 1 = right, 2 = back, 3 = left 
-// int floodFillX;
-// int floodFillY;
 
 void setup() {
   AFMS.begin();
@@ -78,7 +76,7 @@ void setup() {
       } else if ((i == 1 && j == 2) || (i == 2 && j == 1) || (i == 3 && j == 2) || (i == 2 && j == 3)) {
 
         board[i][j].dist= 1;
-      } else if ((i == 0 && j == 0) || (i == 0 && j == 0) || (i == 4 && j == 0) || (i == 4 && j == 4)) {
+      } else if ((i == 0 && j == 0) || (i == 0 && j == 4) || (i == 4 && j == 0) || (i == 4 && j == 4)) {
         // corners
         board[i][j].dist = 4;
       } else if ((i == 0 && j == 1) || (i == 0 && j == 3) || (i == 1 && j == 0) || (i == 0 && j == 4) || (i == 3 && j == 0) || (i == 3 && j == 4) || (i == 4 && j == 1) || (i == 4 && j == 3)) {
@@ -95,8 +93,7 @@ void setup() {
       board[i][j].cellNum = cellNum;
       board[i][j].i = i;
       board[i][j].j = j;
-      
-
+    
       cellNum +=1;
     }
   }
@@ -133,7 +130,15 @@ void loop() {
       turnLeft();
       moveForwardOne();
     }
+    else if ((move_direction == 3) && (orientation-1 == -1)) {
+      turnLeft();
+      moveForwardOne();
+    }
     else if (orientation+1 == move_direction) {
+      turnRight();
+      moveForwardOne();
+    }
+    else if ((move_direction == 0) && (orientation+1 == 4)) {
       turnRight();
       moveForwardOne();
     }
@@ -148,8 +153,11 @@ void loop() {
     push(board[positionX][positionY].cellNum); //push the current position
     while (left_pointer < right_pointer) { //while there are items in the queue
         int current_cell_num = pop(); //pop the first cell of the queue and set is at the current_cell
+        Serial.print("Cur pop");
+        Serial.println(current_cell_num);
+        delay(1000);
         cell current_cell = getCell(current_cell_num);
-        if (current_cell.visited == true) { //if we know what walls surround the cell
+        // if (current_cell.visited == true) { //if we know what walls surround the cell
           int dir = findMinNeighbor(current_cell.i, current_cell.j); //find min neightbor of that cell
           if (current_cell.dist <= current_min_neightbor) { //if curent cell's value is <= minimum of neighbors
             current_cell.dist = current_min_neightbor+1; //set current_cell's value to min + 1
@@ -169,35 +177,35 @@ void loop() {
           }else {
             continue;
           }
-        }
+        // }
 
-        else { // THE CELL HASN'T BEEN VISITED AND WE DON'T KNOW WHATS AROUND IT SO WE HAVE TO GET THERE UH OH
-          // while (true ){
-          //   stop();
-          // } 
-          // goToCell(current_cell.i, current_cell.j) 
+        // else { // THE CELL HASN'T BEEN VISITED AND WE DON'T KNOW WHATS AROUND IT SO WE HAVE TO GET THERE UH OH
+        //   // while (true ){
+        //   //   stop();
+        //   // } 
+        //   // goToCell(current_cell.i, current_cell.j) 
 
-          //assume there are no walls
-          int dir = findMinNeighbor(current_cell.i, current_cell.j);
-          if (current_cell.dist <= current_min_neightbor) { //if curent cell's value is <= minimum of neighbors
-            current_cell.dist = current_min_neightbor+1; //set current_cell's value to min + 1
-            if (board[current_cell.i][current_cell.j].nWall == false) { //add accessible neighbors to the queue
-              push(board[current_cell.i + 1][current_cell.j].cellNum);
-            }
-            if (board[current_cell.i][current_cell.j].eWall == false) { 
-              push(board[current_cell.i][current_cell.j + 1].cellNum); 
-            }
-            if (board[current_cell.i][current_cell.j].sWall == false) { 
-              push(board[current_cell.i - 1][current_cell.j].cellNum); 
-            }
-            if (board[current_cell.i][current_cell.j].wWall == false) { 
-              push(board[current_cell.i][current_cell.j - 1].cellNum); 
-            }
+        //   //assume there are no walls
+        //   int dir = findMinNeighbor(current_cell.i, current_cell.j);
+        //   if (current_cell.dist <= current_min_neightbor) { //if curent cell's value is <= minimum of neighbors
+        //     current_cell.dist = current_min_neightbor+1; //set current_cell's value to min + 1
+        //     if (board[current_cell.i][current_cell.j].nWall == false) { //add accessible neighbors to the queue
+        //       push(board[current_cell.i + 1][current_cell.j].cellNum);
+        //     }
+        //     if (board[current_cell.i][current_cell.j].eWall == false) { 
+        //       push(board[current_cell.i][current_cell.j + 1].cellNum); 
+        //     }
+        //     if (board[current_cell.i][current_cell.j].sWall == false) { 
+        //       push(board[current_cell.i - 1][current_cell.j].cellNum); 
+        //     }
+        //     if (board[current_cell.i][current_cell.j].wWall == false) { 
+        //       push(board[current_cell.i][current_cell.j - 1].cellNum); 
+        //     }
 
-          }else {
-            continue;
-          }
-        }
+        //   }else {
+        //     continue;
+        //   }
+        // }
 
 
     }

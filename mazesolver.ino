@@ -35,19 +35,21 @@ int bmax = 11; //the maximum distance from back sensor a back wall can be if the
 int ffmax = 11; //the maximum distance from front sensor a front wall can be if there exists a front wall (any farther means no wall)
 
 //Floodfill:
-int queue[625][2]; //make a queue of size |board| ^2 ... two pointer array
+int queue[450]; //make a queue of size |board| ^2 ... two pointer array
 int left_pointer = 0; //pop from the queue
 int right_pointer = 0; //push onto the queue
 
 struct cell {
-  int dist;
-  bool nWall;
-  bool eWall;
-  bool sWall;
-  bool wWall;
-  bool visited;
+    int dist;
+    bool nWall;
+    bool eWall;
+    bool sWall;
+    bool wWall;
+    bool visited;
+    int cellNum;
 };
 
+// 5x5 grid
 cell board[5][5];
 
 // int board[][5] = { {4, 3, 2, 3, 4},   //places 0  1  2  3  4
@@ -84,20 +86,15 @@ void setup() {
   bl->setSpeed(50);
   br->setSpeed(50);
 
-
+  int cellNum = 0;
   for (int i = 0; i < 5; i++) {
     for (int j = 0; j < 5; j++) {
-      board[i][j].nWall = false;
-      board[i][j].eWall = false;
-      board[i][j].sWall = false;
-      board[i][j].wWall = false;
-      board[i][j].visited = false;
       if(i == 2 && j == 2) {
         // middle
         board[i][j].dist = 0;
       } else if ((i == 1 && j == 2) || (i == 2 && j == 1) || (i == 3 && j == 2) || (i == 2 && j == 3)) {
 
-        board[i][j].dist = 1;
+        board[i][j].dist= 1;
       } else if ((i == 0 && j == 0) || (i == 0 && j == 0) || (i == 4 && j == 0) || (i == 4 && j == 4)) {
         // corners
         board[i][j].dist = 4;
@@ -106,6 +103,13 @@ void setup() {
       } else {
         board[i][j].dist = 2;
       }
+
+      board[i][j].nWall = false;
+      board[i][j].eWall = false;
+      board[i][j].sWall = false;
+      board[i][j].wWall = false;
+      board[i][j].visited = false;
+      board[i][j].cellNum = cellNum;
 
     }
   }
@@ -521,8 +525,10 @@ int pop() {
 }
 // method to push one item onto the queue with value val and index right_pointer
 void push() {
-  queue[right_pointer][0] = floodFillX;
-  queue[right_pointer][1] = floodFillY;
+
+  // double check this after making queue 1d!!!!!!!!!!!!!!!!!!!!!!!!!!
+  queue[right_pointer] = floodFillX;
+  queue[right_pointer] = floodFillY;
   right_pointer += 1;
 }
 //method to set wheels to forward direction

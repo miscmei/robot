@@ -59,8 +59,8 @@ cell board[5][5];
 int positionX = 0; //current X position..stop when 2,2
 int positionY = 0; //current Y position...stop when 2,2
 int orientation = 0; //direction the robot is facing...0 = forward, 1 = right, 2 = back, 3 = left 
-int floodFillX;
-int floodFillY;
+// int floodFillX;
+// int floodFillY;
 
 void setup() {
   AFMS.begin();
@@ -142,18 +142,86 @@ void loop() {
     }
   }
 
-  //   //floodfill queue
+    //floodfill queue
   else { //if none of the surrounding cells are smaller
+    stop();
     push(board[positionX][positionY].cellNum); //push the current position
     while (left_pointer < right_pointer) { //while there are items in the queue
-        int current_cell = pop(); //pop the first cell of the queue and set is at the current_cell
+        int current_cell_num = pop(); //pop the first cell of the queue and set is at the current_cell
+        cell current_cell = getCell(current_cell_num);
+        if (current_cell.visited == true) { //if we know what walls surround the cell
+          int dir = findMinNeighbor(current_cell.i, current_cell.j); //find min neightbor of that cell
+          if (current_cell.dist <= current_min_neightbor) { //if curent cell's value is <= minimum of neighbors
+            current_cell.dist = current_min_neightbor+1; //set current_cell's value to min + 1
+            if (board[current_cell.i][current_cell.j].nWall == false) { //add accessible neighbors to the queue
+              push(board[current_cell.i + 1][current_cell.j].cellNum);
+            }
+            if (board[current_cell.i][current_cell.j].eWall == false) { 
+              push(board[current_cell.i][current_cell.j + 1].cellNum); 
+            }
+            if (board[current_cell.i][current_cell.j].sWall == false) { 
+              push(board[current_cell.i - 1][current_cell.j].cellNum); 
+            }
+            if (board[current_cell.i][current_cell.j].wWall == false) { 
+              push(board[current_cell.i][current_cell.j - 1].cellNum); 
+            }
+
+          }else {
+            continue;
+          }
+        }
+
+        else { // THE CELL HASN'T BEEN VISITED AND WE DON'T KNOW WHATS AROUND IT SO WE HAVE TO GET THERE UH OH
+          // while (true ){
+          //   stop();
+          // } 
+          // goToCell(current_cell.i, current_cell.j) 
+
+          //assume there are no walls
+          int dir = findMinNeighbor(current_cell.i, current_cell.j);
+          if (current_cell.dist <= current_min_neightbor) { //if curent cell's value is <= minimum of neighbors
+            current_cell.dist = current_min_neightbor+1; //set current_cell's value to min + 1
+            if (board[current_cell.i][current_cell.j].nWall == false) { //add accessible neighbors to the queue
+              push(board[current_cell.i + 1][current_cell.j].cellNum);
+            }
+            if (board[current_cell.i][current_cell.j].eWall == false) { 
+              push(board[current_cell.i][current_cell.j + 1].cellNum); 
+            }
+            if (board[current_cell.i][current_cell.j].sWall == false) { 
+              push(board[current_cell.i - 1][current_cell.j].cellNum); 
+            }
+            if (board[current_cell.i][current_cell.j].wWall == false) { 
+              push(board[current_cell.i][current_cell.j - 1].cellNum); 
+            }
+
+          }else {
+            continue;
+          }
+        }
 
 
-  //   //  turnRight();
-  // }
-
+    }
+  }
 
 }
+
+
+// goToCell(int X, int Y) {
+
+// }
+
+
+//given a numerical name of a cell, return the cell object
+cell getCell(int num){
+  for (int i = 0; i < 5; i++) {
+    for (int j = 0; j < 5; j++) {
+        if (board[i][j].cellNum == num) {
+          return board[i][j];
+        }
+    }
+  }
+}
+
 
 //determines where the walls are in the current box (in relation to the gird, not the robot ortientation)
 void checkWalls() {
@@ -310,58 +378,7 @@ int findMinNeighbor(int X, int Y) {
   }
 
 
-
-
-  // for (int i = 0; i <= 3; i++) { //consider all 4 directions
-      // if (isWalls[i] == false) { //it is possible to go in direction i
-
-      //   if (i == 0 ) { //if the direction is forward
-      //     if (board[positionX+1][positionY].dist < minimum_neighbor) { //if the board in front is less than the minimum
-      //       minimum_neighbor = board[positionX+1][positionY].dist; //the new minimum is the board in front
-      //       direction = 0; //plan to move forward
-      //     }
-      //   }
-
-      //   if (i == 1 ) { //if the direction is right
-      //     if (board[positionX][positionY+1].dist < minimum_neighbor) { //if the board to the right is less than the minimum
-      //       minimum_neighbor = board[positionX][positionY+1].dist; //the new minimum is the board on the right
-      //       direction = 1; //plan to move right
-      //     }
-      //   }
-
-      //   if (i == 2 ) { //if the direction is backwards
-      //     if (board[positionX-1][positionY].dist < minimum_neighbor) { //if the board in the back is less than the minimum
-      //       minimum_neighbor = board[positionX-1][positionY].dist; //the new minimum is the board in the back
-      //       direction = 2; //plan to move backward
-      //     }
-      //   }
-
-      //   if (i == 3 ) { //if the direction is left
-      //     if (board[positionX][positionY-1].dist < minimum_neighbor) { //if the board to the left is less than the minimum
-      //       minimum_neighbor = board[positionX][positionY-1].dist; //the new minimum is the board on the left
-      //       direction = 3; //plan to move left
-      //     }
-      //   }
-        
-      // }
-  
-
-
-  // current_min_neightbor = minimum_neighbor;
-    
-      //while the left_pointer != right_poiniter: (AKA queue not empty)
-          // current_cell = pop first element from queue (and update left pointer)
-          // find current_cell's MINIMUM accessible neighbors
-          // If current cell’s value is ≤ minimum of its neighbors:
-                // set current_cell’s value to minimum +1
-                // add accessible neighbors to queue
-          //else 
-                // continue
-
-  // return direction;
-// }
-
-//this is no longer valid:
+//this is no longer valid
 void center() {
   //check which walls are there (only coonsider walls that are within a range)
 
@@ -451,7 +468,6 @@ void center() {
 
 }
 
-
 //method to move forward one sqare in the maze
 void moveForwardOne() {
   //move forward
@@ -497,7 +513,7 @@ void moveBackOne() {
   }
 
 }
-
+//method to turn the robot 90 degrees right
 void turnRight() {
   fl->run(FORWARD);
   fr->run(BACKWARD);
@@ -510,7 +526,7 @@ void turnRight() {
     orientation = 0;
   }
 }
-
+//method to turn the robot 90 degrees left
 void turnLeft() {
   fl->run(BACKWARD);
   fr->run(FORWARD);

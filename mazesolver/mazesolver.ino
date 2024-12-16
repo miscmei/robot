@@ -22,6 +22,7 @@ long duration; //used for sensor distance calculations
 int distance; //used for sensor distance calculations
 float runningTotal; // for getting rid of noise
 int N = 10; // for getting rid of noise
+int button = 13; // 
 
 //Detecting Walls:
 bool isWalls[4]; //at current cell, keeps track of surrounding walls in the order front, right, back, left
@@ -119,6 +120,7 @@ void setup() {
   pinMode(be, INPUT); // Sets the echoPin as an Input
   pinMode(ftr, OUTPUT); // Sets the triggerPin as an Output
   pinMode(fe, INPUT); // Sets the echoPin as an Input
+  pinMode(button, INPUT); // Sets button in as input
   Serial.begin(9600); // Starts the serial communication
 
 }
@@ -141,6 +143,12 @@ void setup() {
 void loop() {
   while ((positionX == 2) && (positionY == 2)) { //if the robot is at the center
     turnLeft(); //celebrate victory by spinning in circles
+    // button has been pressed, resetting position to run maze again
+    if (digitalRead(button) == HIGH) {
+      positionX = 0;
+      positionY = 0;
+      delay(3000);
+    }
   }
   //if the robot has not made it to the center:
 

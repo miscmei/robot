@@ -147,6 +147,8 @@ void loop() {
     if (digitalRead(button) == HIGH) {
       positionX = 0;
       positionY = 0;
+      orientation = 0;
+      stop();
       delay(3000);
     }
   }

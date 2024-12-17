@@ -626,3 +626,5 @@ int calcDistance(int trigNum, int echoNum){
  distance = duration * 0.034 / 2;
  return distance;
 }
+
+// end prog
